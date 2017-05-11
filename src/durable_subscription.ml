@@ -1,4 +1,4 @@
-open Core
+open! Core
 open Async_kernel
 open Async_rpc_kernel
 open Async_unix
@@ -14,10 +14,10 @@ module Update = struct
 end
 
 type ('query, 'response, 'error) t =
-  { update_w : ('response, 'error) Update.t Pipe.Writer.t
-  ; connection : Rpc.Connection.t Durable.t
-  ; rpc : ('query, 'response, 'error) Rpc.Pipe_rpc.t
-  ; query : 'query
+  { update_w          : ('response, 'error) Update.t Pipe.Writer.t
+  ; connection        : Rpc.Connection.t Durable.t
+  ; rpc               : ('query, 'response, 'error) Rpc.Pipe_rpc.t
+  ; query             : 'query
   ; resubscribe_delay : Time.Span.t
   }
 
@@ -28,14 +28,14 @@ let subscription_active t = not (Pipe.is_closed t.update_w)
 let write t update =
   if subscription_active t
   then Pipe.write_without_pushback t.update_w update
-  else ()
 ;;
 
 let try_to_get_fresh_pipe t =
-  write t Update.Attempting_new_connection;
-  Durable.with_ t.connection ~f:(fun connection ->
-    Rpc.Pipe_rpc.dispatch t.rpc connection t.query)
-  >>| function
+  write t Attempting_new_connection;
+  match%map
+    Durable.with_ t.connection ~f:(fun connection ->
+      Rpc.Pipe_rpc.dispatch t.rpc connection t.query)
+  with
   | Error err -> Error (`Failed_to_connect err)
   | Ok result ->
     match result with
@@ -46,23 +46,17 @@ let try_to_get_fresh_pipe t =
 let rec subscribe t =
   if not (subscription_active t)
   then return `Subscription_no_longer_active
-  else
-    begin
-      try_to_get_fresh_pipe t
-      >>= function
-      | Error err ->
-        begin
-          match err with
-          | `Failed_to_connect e -> write t (Update.Failed_to_connect e);
-          | `Rpc_error e -> write t (Update.Rpc_error e)
-        end;
-        Clock.after t.resubscribe_delay
-        >>= fun () ->
-        subscribe t
-      | Ok (pipe, id) ->
-        write t (Update.Connection_success id);
-        return (`Ok pipe)
-    end
+  else (
+    match%bind try_to_get_fresh_pipe t with
+    | Error err ->
+      (match err with
+       | `Failed_to_connect e -> write t (Failed_to_connect e);
+       | `Rpc_error e -> write t (Rpc_error e));
+      let%bind () = Clock.after t.resubscribe_delay in
+      subscribe t
+    | Ok (pipe, id) ->
+      write t (Connection_success id);
+      return (`Ok pipe))
 ;;
 
 let rec handle_update_pipe t deferred_pipe =
@@ -73,15 +67,15 @@ let rec handle_update_pipe t deferred_pipe =
     (* Pipe.transfer_is determined when [pipe] is closed (as when we lose our connection),
        or when [t.update_w] is closed (as when the client closes the reader returned by
        [create*] *)
-    Pipe.transfer pipe t.update_w ~f:(fun update -> (Update.Update update))
+    Pipe.transfer pipe t.update_w ~f:(fun update -> Update update)
     >>> fun () ->
-    write t Update.Lost_connection;
+    write t Lost_connection;
     handle_update_pipe t (subscribe t)
 ;;
 
 let create_internal connection rpc ~query ~resubscribe_delay =
   let update_r, update_w = Pipe.create () in
-  let t = { update_w ; connection ; rpc ; query ; resubscribe_delay } in
+  let t = { update_w; connection; rpc; query; resubscribe_delay } in
   update_r, t
 ;;
 
@@ -93,12 +87,11 @@ let create connection rpc ~query ~resubscribe_delay =
 
 let create_or_fail connection rpc ~query ~resubscribe_delay =
   let update_r, t = create_internal connection rpc ~query ~resubscribe_delay in
-  try_to_get_fresh_pipe t
-  >>| function
+  match%map try_to_get_fresh_pipe t with
   | Error (`Failed_to_connect e) -> Error e
   | Error (`Rpc_error e) -> Ok (Error e)
   | Ok (fresh_pipe, id) ->
-    write t (Update.Connection_success id);
+    write t (Connection_success id);
     handle_update_pipe t (return (`Ok fresh_pipe));
     Ok (Ok update_r)
 ;;
