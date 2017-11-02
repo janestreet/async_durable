@@ -1,7 +1,6 @@
-open! Core
+open! Core_kernel
 open Async_kernel
 open Async_rpc_kernel
-open Async_unix
 
 module Update = struct
   type ('update, 'error) t =
@@ -18,7 +17,7 @@ type ('query, 'response, 'error) t =
   ; connection        : Rpc.Connection.t Durable.t
   ; rpc               : ('query, 'response, 'error) Rpc.Pipe_rpc.t
   ; query             : 'query
-  ; resubscribe_delay : Time.Span.t
+  ; resubscribe_delay : Time_ns.Span.t
   }
 
 let subscription_active t = not (Pipe.is_closed t.update_w)
@@ -52,7 +51,7 @@ let rec subscribe t =
       (match err with
        | `Failed_to_connect e -> write t (Failed_to_connect e);
        | `Rpc_error e -> write t (Rpc_error e));
-      let%bind () = Clock.after t.resubscribe_delay in
+      let%bind () = Clock_ns.after t.resubscribe_delay in
       subscribe t
     | Ok (pipe, id) ->
       write t (Connection_success id);
@@ -75,6 +74,7 @@ let rec handle_update_pipe t deferred_pipe =
 
 let create_internal connection rpc ~query ~resubscribe_delay =
   let update_r, update_w = Pipe.create () in
+  let resubscribe_delay = Time.Span.to_sec resubscribe_delay |> Time_ns.Span.of_sec in
   let t = { update_w; connection; rpc; query; resubscribe_delay } in
   update_r, t
 ;;

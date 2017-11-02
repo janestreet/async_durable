@@ -1,4 +1,4 @@
-open! Core
+open! Core_kernel
 open! Async_kernel
 
 (** Durable is designed to help recover from simple errors when using mutable data types

@@ -1,4 +1,4 @@
-open! Core
+open! Core_kernel
 open! Async_kernel
 open! Async_rpc_kernel
 
