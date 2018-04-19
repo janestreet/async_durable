@@ -1,4 +1,4 @@
-open! Core_kernel
+open Core_kernel
 open Async_kernel
 
 module Durable = struct
