@@ -1,26 +1,24 @@
-opam-version: "1.2"
+opam-version: "2.0"
 maintainer: "opensource@janestreet.com"
 authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
 homepage: "https://github.com/janestreet/async_durable"
 bug-reports: "https://github.com/janestreet/async_durable/issues"
 dev-repo: "git+https://github.com/janestreet/async_durable.git"
+doc: "https://ocaml.janestreet.com/ocaml-core/latest/doc/async_durable/index.html"
 license: "MIT"
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
+  "ocaml" {>= "4.07.0"}
   "async_kernel"
   "async_rpc_kernel"
   "core_kernel"
   "ppx_jane"
-  "jbuilder"                {build & >= "1.0+beta18.1"}
-  "ocaml-migrate-parsetree" {>= "1.0"}
-  "ppxlib"                  {>= "0.1.0"}
+  "dune"             {build & >= "1.5.1"}
 ]
-available: [ ocaml-version >= "4.06.1" ]
-descr: "
-Durable connections for use with async
-
+synopsis: "Durable connections for use with async"
+description: "
 \\ Async_durable helps recover from errors when
 connections can be easily be recreated.
 "
