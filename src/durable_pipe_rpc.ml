@@ -34,9 +34,101 @@ let create connection rpc ~query ~resubscribe_delay =
   |> Pipe.filter_map ~f:filter_map_update
 ;;
 
+let create_versioned
+      (type query)
+      (type response)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module Pipe_rpc =
+      (val rpc_module : Versioned_rpc.Both_convert.Pipe_rpc.S
+       with type caller_query = query
+        and type caller_response = response
+        and type caller_error = error
+      )
+    in
+    Pipe_rpc.dispatch_multi conn query
+    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+  in
+  Durable_state_rpc.Expert.create connection ~dispatch ~resubscribe_delay
+  |> Pipe.filter_map ~f:filter_map_update
+;;
+
+let create_versioned'
+      (type query)
+      (type response)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module Pipe_rpc =
+      (val rpc_module : Versioned_rpc.Caller_converts.Pipe_rpc.S
+       with type query = query
+        and type response = response
+        and type error = error
+      )
+    in
+    Pipe_rpc.dispatch_multi conn query
+    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+  in
+  Durable_state_rpc.Expert.create connection ~dispatch ~resubscribe_delay
+  |> Pipe.filter_map ~f:filter_map_update
+;;
+
 let create_or_fail connection rpc ~query ~resubscribe_delay =
   let dispatch conn =
     Rpc.Pipe_rpc.dispatch rpc conn query
+    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+  in
+  Durable_state_rpc.Expert.create_or_fail connection ~dispatch ~resubscribe_delay
+  >>|? Result.map ~f:(Pipe.filter_map ~f:filter_map_update)
+;;
+
+let create_or_fail_versioned
+      (type query)
+      (type response)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module Pipe_rpc =
+      (val rpc_module : Versioned_rpc.Both_convert.Pipe_rpc.S
+       with type caller_query = query
+        and type caller_response = response
+        and type caller_error = error
+      )
+    in
+    Pipe_rpc.dispatch_multi conn query
+    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+  in
+  Durable_state_rpc.Expert.create_or_fail connection ~dispatch ~resubscribe_delay
+  >>|? Result.map ~f:(Pipe.filter_map ~f:filter_map_update)
+;;
+
+let create_or_fail_versioned'
+      (type query)
+      (type response)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module Pipe_rpc =
+      (val rpc_module : Versioned_rpc.Caller_converts.Pipe_rpc.S
+       with type query = query
+        and type response = response
+        and type error = error
+      )
+    in
+    Pipe_rpc.dispatch_multi conn query
     >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
   Durable_state_rpc.Expert.create_or_fail connection ~dispatch ~resubscribe_delay

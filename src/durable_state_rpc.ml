@@ -13,12 +13,12 @@ module Update = struct
     | State of 'state
 end
 
-type ('state, 'update, 'error, 'metadata) t =
+type ('state, 'update, 'error, 'metadata, 'connection) t =
   { updates_writer    : ('state, 'update, 'error, 'metadata) Update.t Pipe.Writer.t
-  ; connection        : Rpc.Connection.t Durable.t
+  ; connection        : 'connection Durable.t
   ; resubscribe_delay : Time_ns.Span.t
   ; dispatch :
-      Rpc.Connection.t ->
+      'connection ->
       ('state * 'update Pipe.Reader.t * 'metadata, 'error)
         Result.t Or_error.t Deferred.t
   }
@@ -114,7 +114,99 @@ let create connection rpc ~query ~resubscribe_delay =
   Expert.create connection ~dispatch ~resubscribe_delay
 ;;
 
+let create_versioned
+      (type query)
+      (type state)
+      (type update)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module State_rpc =
+      (val rpc_module : Versioned_rpc.Both_convert.State_rpc.S
+       with type caller_query = query
+        and type caller_state = state
+        and type caller_update = update
+        and type caller_error = error
+      )
+    in
+    State_rpc.dispatch_multi conn query
+  in
+  Expert.create connection ~dispatch ~resubscribe_delay
+;;
+
+let create_versioned'
+      (type query)
+      (type state)
+      (type update)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module State_rpc =
+      (val rpc_module : Versioned_rpc.Caller_converts.State_rpc.S
+       with type query = query
+        and type state = state
+        and type update = update
+        and type error = error
+      )
+    in
+    State_rpc.dispatch_multi conn query
+  in
+  Expert.create connection ~dispatch ~resubscribe_delay
+;;
+
 let create_or_fail connection rpc ~query ~resubscribe_delay =
   let dispatch conn = Rpc.State_rpc.dispatch rpc conn query in
+  Expert.create_or_fail connection ~dispatch ~resubscribe_delay
+;;
+
+let create_or_fail_versioned
+      (type query)
+      (type state)
+      (type update)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module State_rpc =
+      (val rpc_module : Versioned_rpc.Both_convert.State_rpc.S
+       with type caller_query = query
+        and type caller_state = state
+        and type caller_update = update
+        and type caller_error = error
+      )
+    in
+    State_rpc.dispatch_multi conn query
+  in
+  Expert.create_or_fail connection ~dispatch ~resubscribe_delay
+;;
+
+let create_or_fail_versioned'
+      (type query)
+      (type state)
+      (type update)
+      (type error)
+      connection
+      rpc_module
+      ~(query : query)
+      ~resubscribe_delay =
+  let dispatch conn =
+    let module State_rpc =
+      (val rpc_module : Versioned_rpc.Caller_converts.State_rpc.S
+       with type query = query
+        and type state = state
+        and type update = update
+        and type error = error
+      )
+    in
+    State_rpc.dispatch_multi conn query
+  in
   Expert.create_or_fail connection ~dispatch ~resubscribe_delay
 ;;

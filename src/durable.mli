@@ -3,7 +3,14 @@ open Async_kernel
 
 (** Durable is designed to help recover from simple errors when using mutable data types
     that silently fail and can be easily rebuilt or created anew. A clear candidate is
-    Rpc.Connection.t *)
+    Rpc.Connection.t.
+
+    Durable and Persistent_connection have overlapping functionality when Durable is used
+    for an Rpc.Connection.t. Consider using Durable if you want out-of-the-box support for
+    Durable Pipe and State RPC connections, or if you prefer the with_ based interface,
+    which returns connection level errors to the calling code and avoids the complexities
+    that can arise from Deferreds that never become determined.
+*)
 
 type 'a t
 
