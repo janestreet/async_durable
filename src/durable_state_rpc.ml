@@ -65,10 +65,15 @@ let rec handle_update_pipe t deferred_pipe =
   >>> function
   | `Subscription_no_longer_active -> ()
   | `Ok pipe ->
-    (* Pipe.transfer_is determined when [pipe] is closed (as when we lose our connection),
-       or when [t.updates_writeer] is closed (as when the client closes the reader
-       returned by [create*] *)
-    Pipe.transfer pipe t.updates_writer ~f:(fun update -> Update update)
+    (* Pipe.transfer' is determined when [pipe] is closed (as when we lose our
+       connection), or when [t.updates_writer] is closed (as when the client closes the
+       reader returned by [create*].
+
+       We use [transfer'] instead of [transfer] to enable our users to do batching with
+       [Pipe.iter'] calls on the reader they were given.  If we used [transfer] then only
+       one item at a time would hit their pipe. *)
+    Pipe.transfer' pipe t.updates_writer ~f:(fun updates ->
+      return (Queue.map updates ~f:(fun update -> Update.Update update)))
     >>> fun () ->
     write t Lost_connection;
     handle_update_pipe t (subscribe t)
