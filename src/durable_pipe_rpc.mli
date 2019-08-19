@@ -52,8 +52,7 @@ val create_versioned
   -> (module Versioned_rpc.Both_convert.Pipe_rpc.S
        with type caller_query = 'query
         and type caller_response = 'response
-        and type caller_error = 'error
-     )
+        and type caller_error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
   -> ('response Or_error.t, 'error) Update.t Pipe.Reader.t
@@ -63,8 +62,7 @@ val create_versioned'
   -> (module Versioned_rpc.Caller_converts.Pipe_rpc.S
        with type query = 'query
         and type response = 'response
-        and type error = 'error
-     )
+        and type error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
   -> ('response Or_error.t, 'error) Update.t Pipe.Reader.t
@@ -74,21 +72,19 @@ val create_or_fail_versioned
   -> (module Versioned_rpc.Both_convert.Pipe_rpc.S
        with type caller_query = 'query
         and type caller_response = 'response
-        and type caller_error = 'error
-     )
+        and type caller_error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
-  -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error)
-       Result.t Or_error.t Deferred.t
+  -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t
+       Deferred.t
 
 val create_or_fail_versioned'
   :  Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Caller_converts.Pipe_rpc.S
        with type query = 'query
         and type response = 'response
-        and type error = 'error
-     )
+        and type error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
-  -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error)
-       Result.t Or_error.t Deferred.t
+  -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t
+       Deferred.t

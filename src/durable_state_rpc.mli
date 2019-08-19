@@ -43,8 +43,11 @@ val create_or_fail
   -> ('query, 'state, 'update, 'error) Rpc.State_rpc.t
   -> query:'query
   -> resubscribe_delay:Time.Span.t
-  -> (('state, 'update, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t, 'error)
-       Result.t Or_error.t Deferred.t
+  -> ( ('state, 'update, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
+     , 'error )
+       Result.t
+       Or_error.t
+       Deferred.t
 
 (** [create_versioned], [create_or_fail_versioned], [create_versioned'],
     [create_or_fail_versioned'] are identical to [create] and [create_or_fail] but work
@@ -54,50 +57,58 @@ val create_or_fail
 val create_versioned
   :  Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Both_convert.State_rpc.S
-       with type caller_query  = 'query
-        and type caller_state  = 'state
+       with type caller_query = 'query
+        and type caller_state = 'state
         and type caller_update = 'update
-        and type caller_error  = 'error)
+        and type caller_error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
-  -> ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
+  -> ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
+       Pipe.Reader.t
 
 val create_versioned'
   :  Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Caller_converts.State_rpc.S
-       with type query  = 'query
-        and type state  = 'state
+       with type query = 'query
+        and type state = 'state
         and type update = 'update
-        and type error  = 'error)
+        and type error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
-  -> ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
+  -> ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
+       Pipe.Reader.t
 
 val create_or_fail_versioned
   :  Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Both_convert.State_rpc.S
-       with type caller_query  = 'query
-        and type caller_state  = 'state
+       with type caller_query = 'query
+        and type caller_state = 'state
         and type caller_update = 'update
-        and type caller_error  = 'error)
+        and type caller_error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
-  -> (('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t)
-        Update.t Pipe.Reader.t
-     , 'error) Result.t Or_error.t Deferred.t
+  -> ( ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
+         Pipe.Reader.t
+     , 'error )
+       Result.t
+       Or_error.t
+       Deferred.t
 
 val create_or_fail_versioned'
   :  Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Caller_converts.State_rpc.S
-       with type query  = 'query
-        and type state  = 'state
+       with type query = 'query
+        and type state = 'state
         and type update = 'update
-        and type error  = 'error)
+        and type error = 'error)
   -> query:'query
   -> resubscribe_delay:Time.Span.t
-  -> (('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t)
-        Update.t Pipe.Reader.t
-     , 'error) Result.t Or_error.t Deferred.t
+  -> ( ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
+         Pipe.Reader.t
+     , 'error )
+       Result.t
+       Or_error.t
+       Deferred.t
 
 (** [Expert] is only used to build [Durable_pipe_rpc] off the same implementation as
     [Durable_state_rpc]. If other similar [Rpc]s come into being, they can also take
@@ -106,16 +117,21 @@ val create_or_fail_versioned'
 module Expert : sig
   val create
     :  'connection Durable.t
-    -> dispatch:('connection -> ('state * 'update Pipe.Reader.t * 'metadata, 'error)
-                                  Result.t Or_error.t Deferred.t)
+    -> dispatch:('connection
+                 -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t
+                      Or_error.t
+                      Deferred.t)
     -> resubscribe_delay:Time.Span.t
     -> ('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t
 
   val create_or_fail
     :  'connection Durable.t
-    -> dispatch:('connection -> ('state * 'update Pipe.Reader.t * 'metadata, 'error)
-                                  Result.t Or_error.t Deferred.t)
+    -> dispatch:('connection
+                 -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t
+                      Or_error.t
+                      Deferred.t)
     -> resubscribe_delay:Time.Span.t
-    -> (('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t, 'error)
-         Result.t Or_error.t Deferred.t
+    -> (('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t, 'error) Result.t
+         Or_error.t
+         Deferred.t
 end
