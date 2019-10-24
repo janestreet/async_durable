@@ -15,7 +15,7 @@ depends: [
   "async_rpc_kernel"
   "core_kernel"
   "ppx_jane"
-  "dune"             {build & >= "1.5.1"}
+  "dune"             {>= "1.5.1"}
 ]
 synopsis: "Durable connections for use with async"
 description: "
