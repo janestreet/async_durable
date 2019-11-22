@@ -19,6 +19,5 @@ depends: [
 ]
 synopsis: "Durable connections for use with async"
 description: "
-\\ Async_durable helps recover from errors when
-connections can be easily be recreated.
+Async_durable helps recover from errors when connections can be easily be recreated.
 "
