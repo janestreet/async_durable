@@ -11,6 +11,7 @@ module Update = struct
     | Rpc_error of 'error
     | Update of 'update
     | State of 'state
+  [@@deriving sexp_of]
 end
 
 type ('state, 'update, 'error, 'metadata, 'connection) t =

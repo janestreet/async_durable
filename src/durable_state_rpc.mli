@@ -15,6 +15,7 @@ module Update : sig
     | Rpc_error of 'error
     | Update of 'update
     | State of 'state
+  [@@deriving sexp_of]
 end
 
 (** [create] will immediately dispatch the the supplied [Rpc.State_rpc.t] with [query]
