@@ -26,7 +26,8 @@ end
     Closing the returned pipe will permanently close the subscription.
 *)
 val create
-  :  Rpc.Connection.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
   -> resubscribe_delay:Time.Span.t
@@ -36,7 +37,8 @@ val create
     supplied [Rpc.Pipe_rpc.t] does not succeed, or an [Ok (Error 'error)] if the initial
     dispatch returns a server side rpc error. *)
 val create_or_fail
-  :  Rpc.Connection.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
   -> resubscribe_delay:Time.Span.t
@@ -48,7 +50,8 @@ val create_or_fail
 *)
 
 val create_versioned
-  :  Versioned_rpc.Connection_with_menu.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Both_convert.Pipe_rpc.S
        with type caller_query = 'query
         and type caller_response = 'response
@@ -58,7 +61,8 @@ val create_versioned
   -> ('response Or_error.t, 'error) Update.t Pipe.Reader.t
 
 val create_versioned'
-  :  Versioned_rpc.Connection_with_menu.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Caller_converts.Pipe_rpc.S
        with type query = 'query
         and type response = 'response
@@ -68,7 +72,8 @@ val create_versioned'
   -> ('response Or_error.t, 'error) Update.t Pipe.Reader.t
 
 val create_or_fail_versioned
-  :  Versioned_rpc.Connection_with_menu.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Both_convert.Pipe_rpc.S
        with type caller_query = 'query
         and type caller_response = 'response
@@ -79,7 +84,8 @@ val create_or_fail_versioned
        Deferred.t
 
 val create_or_fail_versioned'
-  :  Versioned_rpc.Connection_with_menu.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Versioned_rpc.Connection_with_menu.t Durable.t
   -> (module Versioned_rpc.Caller_converts.Pipe_rpc.S
        with type query = 'query
         and type response = 'response

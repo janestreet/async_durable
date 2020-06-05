@@ -13,7 +13,8 @@ module Update : sig
 end
 
 val create
-  :  Rpc.Connection.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
   -> resubscribe_delay:Time.Span.t
@@ -21,7 +22,8 @@ val create
 [@@deprecated "[since 2018-04] use Durable_pipe_rpc instead"]
 
 val create_or_fail
-  :  Rpc.Connection.t Durable.t
+  :  ?time_source:Time_source.t
+  -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
   -> resubscribe_delay:Time.Span.t

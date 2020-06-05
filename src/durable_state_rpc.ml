@@ -22,6 +22,7 @@ type ('state, 'update, 'error, 'metadata, 'connection) t =
       'connection
       -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
            Deferred.t
+  ; time_source : Time_source.t
   }
 
 let subscription_active t = not (Pipe.is_closed t.updates_writer)
@@ -51,7 +52,7 @@ let rec subscribe t =
       (match err with
        | `Failed_to_connect e -> write t (Failed_to_connect e)
        | `Rpc_error e -> write t (Rpc_error e));
-      let%bind () = Clock_ns.after t.resubscribe_delay in
+      let%bind () = Time_source.after t.time_source t.resubscribe_delay in
       subscribe t
     | Ok (state, pipe, id) ->
       write t (Connection_success id);
@@ -79,21 +80,30 @@ let rec handle_update_pipe t deferred_pipe =
 ;;
 
 module Expert = struct
-  let create_internal connection ~dispatch ~resubscribe_delay =
+  let create_internal
+        ?(time_source = Time_source.wall_clock ())
+        connection
+        ~dispatch
+        ~resubscribe_delay
+    =
     let updates_reader, updates_writer = Pipe.create () in
     let resubscribe_delay = Time_ns.Span.of_sec (Time.Span.to_sec resubscribe_delay) in
-    let t = { updates_writer; connection; resubscribe_delay; dispatch } in
+    let t = { updates_writer; connection; resubscribe_delay; dispatch; time_source } in
     updates_reader, t
   ;;
 
-  let create connection ~dispatch ~resubscribe_delay =
-    let updates_reader, t = create_internal connection ~dispatch ~resubscribe_delay in
+  let create ?time_source connection ~dispatch ~resubscribe_delay =
+    let updates_reader, t =
+      create_internal ?time_source connection ~dispatch ~resubscribe_delay
+    in
     handle_update_pipe t (subscribe t);
     updates_reader
   ;;
 
-  let create_or_fail connection ~dispatch ~resubscribe_delay =
-    let updates_reader, t = create_internal connection ~dispatch ~resubscribe_delay in
+  let create_or_fail ?time_source connection ~dispatch ~resubscribe_delay =
+    let updates_reader, t =
+      create_internal ?time_source connection ~dispatch ~resubscribe_delay
+    in
     match%map try_to_get_fresh_pipe t with
     | Error (`Failed_to_connect e) -> Error e
     | Error (`Rpc_error e) -> Ok (Error e)
@@ -105,13 +115,14 @@ module Expert = struct
   ;;
 end
 
-let create connection rpc ~query ~resubscribe_delay =
+let create ?time_source connection rpc ~query ~resubscribe_delay =
   let dispatch conn = Rpc.State_rpc.dispatch rpc conn query in
-  Expert.create connection ~dispatch ~resubscribe_delay
+  Expert.create ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_versioned
       (type query state update error)
+      ?time_source
       connection
       rpc_module
       ~(query : query)
@@ -126,11 +137,12 @@ let create_versioned
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create connection ~dispatch ~resubscribe_delay
+  Expert.create ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_versioned'
       (type query state update error)
+      ?time_source
       connection
       rpc_module
       ~(query : query)
@@ -145,16 +157,17 @@ let create_versioned'
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create connection ~dispatch ~resubscribe_delay
+  Expert.create ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
-let create_or_fail connection rpc ~query ~resubscribe_delay =
+let create_or_fail ?time_source connection rpc ~query ~resubscribe_delay =
   let dispatch conn = Rpc.State_rpc.dispatch rpc conn query in
-  Expert.create_or_fail connection ~dispatch ~resubscribe_delay
+  Expert.create_or_fail ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_or_fail_versioned
       (type query state update error)
+      ?time_source
       connection
       rpc_module
       ~(query : query)
@@ -169,11 +182,12 @@ let create_or_fail_versioned
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create_or_fail connection ~dispatch ~resubscribe_delay
+  Expert.create_or_fail ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_or_fail_versioned'
       (type query state update error)
+      ?time_source
       connection
       rpc_module
       ~(query : query)
@@ -188,5 +202,5 @@ let create_or_fail_versioned'
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create_or_fail connection ~dispatch ~resubscribe_delay
+  Expert.create_or_fail ?time_source connection ~dispatch ~resubscribe_delay
 ;;
