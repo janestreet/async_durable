@@ -48,8 +48,7 @@ let create_versioned
                             and type caller_response = response
                             and type caller_error = error)
     in
-    Pipe_rpc.dispatch_multi conn query
-    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+    Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
   Durable_state_rpc.Expert.create ?time_source connection ~dispatch ~resubscribe_delay
   |> Pipe.filter_map ~f:filter_map_update
@@ -69,8 +68,7 @@ let create_versioned'
                             and type response = response
                             and type error = error)
     in
-    Pipe_rpc.dispatch_multi conn query
-    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+    Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
   Durable_state_rpc.Expert.create ?time_source connection ~dispatch ~resubscribe_delay
   |> Pipe.filter_map ~f:filter_map_update
@@ -103,8 +101,7 @@ let create_or_fail_versioned
                             and type caller_response = response
                             and type caller_error = error)
     in
-    Pipe_rpc.dispatch_multi conn query
-    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+    Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
   Durable_state_rpc.Expert.create_or_fail
     ?time_source
@@ -128,8 +125,7 @@ let create_or_fail_versioned'
                             and type response = response
                             and type error = error)
     in
-    Pipe_rpc.dispatch_multi conn query
-    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+    Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
   Durable_state_rpc.Expert.create_or_fail
     ?time_source
