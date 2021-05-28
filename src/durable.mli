@@ -22,7 +22,7 @@ type 'a t
     [to_rebuild] Is called on the broken 'a. It should return a "fixed" 'a.
 
     When the function [with_] below is called, it uses [is_broken] to test if the current
-    Durable value is broken. If not, it calls either [to_create] or [to_rebuild]. If
+    Durable value is broken. If so, it calls either [to_create] or [to_rebuild]. If
     [to_rebuild] is None (as in the default case), the Durable will try to create a fresh
     value with [to_create].
 
@@ -60,3 +60,7 @@ val create_or_fail
     [with_] will raise if [f] raises.
 *)
 val with_ : 'a t -> f:('a -> 'b Deferred.Or_error.t) -> 'b Deferred.Or_error.t
+
+(** [is_intact] exposes whether the Durable value is in a valid state (i.e. it
+    has been built and it is not currently broken). *)
+val is_intact_bus : 'a t -> (bool -> unit) Bus.Read_only.t

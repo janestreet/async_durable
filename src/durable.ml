@@ -11,19 +11,39 @@ end
 type 'a t =
   { mutable durable : 'a Durable.t
   ; to_create : unit -> 'a Deferred.Or_error.t
-  ; is_broken : 'a -> bool
+  ; to_check_broken : 'a -> bool
+  ; mutable is_intact : bool
+  ; is_intact_bus : (bool -> unit) Bus.Read_write.t
   ; to_rebuild : ('a -> 'a Deferred.Or_error.t) option
   }
 
-let create ~to_create ~is_broken ?to_rebuild () =
-  { durable = Void; to_create; is_broken; to_rebuild }
+let create ~to_create ~is_broken:to_check_broken ?to_rebuild () =
+  { durable = Void
+  ; to_create
+  ; to_check_broken
+  ; is_intact = false
+  ; is_intact_bus =
+      Bus.create
+        [%here]
+        Arity1
+        ~on_subscription_after_first_write:Allow_and_send_last_value
+        ~on_callback_raise:ignore
+  ; to_rebuild
+  }
+;;
+
+let is_broken_and_update_mvar t durable =
+  let is_broken = t.to_check_broken durable in
+  if Bool.(t.is_intact = is_broken) then Bus.write t.is_intact_bus (not is_broken);
+  t.is_intact <- not is_broken;
+  is_broken
 ;;
 
 let create_or_fail ~to_create ~is_broken ?to_rebuild () =
   let t = create ~to_create ~is_broken ?to_rebuild () in
   t.to_create ()
   >>=? fun dur ->
-  if t.is_broken dur
+  if is_broken_and_update_mvar t dur
   then return (Or_error.error_string "Initial durable value is broken.")
   else (
     t.durable <- Built dur;
@@ -53,7 +73,7 @@ let get_durable t =
   | Void -> build (t.to_create ())
   | Building durable -> durable
   | Built durable ->
-    if t.is_broken durable
+    if is_broken_and_update_mvar t durable
     then
       build
         (match t.to_rebuild with
@@ -65,13 +85,15 @@ let get_durable t =
 let with_ t ~f =
   get_durable t
   >>=? fun durable ->
-  if t.is_broken durable
+  if is_broken_and_update_mvar t durable
   then
     return
       (Or_error.error_string
          "Durable value was broken immediately after being created or rebuilt.")
   else f durable
 ;;
+
+let is_intact_bus t = Bus.read_only t.is_intact_bus
 
 let%test_module _ =
   (module struct
@@ -119,7 +141,7 @@ let%test_module _ =
 
     let poke t = ignore (with_ t ~f:(fun _t -> return (Ok ())))
 
-    let%test_unit _ =
+    let%expect_test _ =
       let pass = ref false in
       (create ~use_fix:false ~now:true
        >>> fun t ->
@@ -127,7 +149,8 @@ let%test_module _ =
        | Built _ -> pass := true
        | _ -> ());
       go ();
-      assert !pass
+      print_s [%message (!pass : bool)];
+      [%expect {| (!pass true) |}]
     ;;
 
     let build_break_poke ~use_fix ~now =
@@ -145,28 +168,28 @@ let%test_module _ =
       go ()
     ;;
 
-    let%test_unit _ =
+    let%expect_test _ =
       build_break_poke ~use_fix:true ~now:true;
-      assert (!create_counter = 1);
-      assert (!fix_counter = 1)
+      print_s [%message (!create_counter : int) (!fix_counter : int)];
+      [%expect {| ((!create_counter 1) (!fix_counter 1)) |}]
     ;;
 
-    let%test_unit _ =
+    let%expect_test _ =
       build_break_poke ~use_fix:true ~now:false;
-      assert (!create_counter = 1);
-      assert (!fix_counter = 1)
+      print_s [%message (!create_counter : int) (!fix_counter : int)];
+      [%expect {| ((!create_counter 1) (!fix_counter 1)) |}]
     ;;
 
-    let%test_unit _ =
+    let%expect_test _ =
       build_break_poke ~use_fix:false ~now:true;
-      assert (!create_counter = 2);
-      assert (!fix_counter = 0)
+      print_s [%message (!create_counter : int) (!fix_counter : int)];
+      [%expect {| ((!create_counter 2) (!fix_counter 0)) |}]
     ;;
 
-    let%test_unit _ =
+    let%expect_test _ =
       build_break_poke ~use_fix:false ~now:false;
-      assert (!create_counter = 2);
-      assert (!fix_counter = 0)
+      print_s [%message (!create_counter : int) (!fix_counter : int)];
+      [%expect {| ((!create_counter 2) (!fix_counter 0)) |}]
     ;;
   end)
 ;;
