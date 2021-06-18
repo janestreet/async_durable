@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 open Async_kernel
 
 module Durable = struct
@@ -53,32 +53,33 @@ let create_or_fail ~to_create ~is_broken ?to_rebuild () =
 let get_durable t =
   let build building =
     let building =
-      let%map result = building in
-      assert (
-        match t.durable with
-        | Building _ -> true
-        | _ -> false);
-      t.durable
-      <- (match result with
-        (* Errors that show up here will also be returned by [get_durable]. We aren't
-           losing any information *)
-        | Error _ -> Void
-        | Ok durable -> Built durable);
-      result
+      Deferred.Or_error.try_with_join ~here:[%here] (fun () ->
+        let%map result = building () in
+        assert (
+          match t.durable with
+          | Building _ -> true
+          | _ -> false);
+        t.durable
+        <- (match result with
+          (* Errors that show up here will also be returned by [get_durable]. We aren't
+             losing any information *)
+          | Error _ -> Void
+          | Ok durable -> Built durable);
+        result)
     in
     t.durable <- Building building;
     building
   in
   match t.durable with
-  | Void -> build (t.to_create ())
+  | Void -> build t.to_create
   | Building durable -> durable
   | Built durable ->
     if is_broken_and_update_mvar t durable
     then
       build
         (match t.to_rebuild with
-         | None -> t.to_create ()
-         | Some to_rebuild -> to_rebuild durable)
+         | None -> t.to_create
+         | Some to_rebuild -> fun () -> to_rebuild durable)
     else return (Ok durable)
 ;;
 

@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 open Async_kernel
 
 (** Durable is designed to help recover from simple errors when using mutable data types
@@ -14,7 +14,11 @@ open Async_kernel
 
 type 'a t
 
-(** [to_create] tells the Durable how to build a fresh 'a value.
+(** [to_create] tells the Durable how to build a fresh 'a value.  If [to_create] raises,
+    the exception is treated as if an [Error] was returned.  If [to_create] needs to fail
+    permanently when exceptions occur, then consider using [Scheduler.within'
+    ~monitor:Monitor.main] inside of [to_create], so that the exceptions go to a monitor
+    that will abend the app.
 
     [is_broken] tests whether the current 'a value can be used. It should return true when
     you want the Durable to attempt to rebuild or recreate the 'a.
