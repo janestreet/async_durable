@@ -34,7 +34,7 @@ val create
   -> Rpc.Connection.t Durable.t
   -> ('query, 'state, 'update, 'error) Rpc.State_rpc.t
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ('state, 'update, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
 
 (** [create_or_fail] will return an [Error e] if the initial attempt to dispatch the
@@ -45,7 +45,7 @@ val create_or_fail
   -> Rpc.Connection.t Durable.t
   -> ('query, 'state, 'update, 'error) Rpc.State_rpc.t
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ( ('state, 'update, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
      , 'error )
        Result.t
@@ -66,7 +66,7 @@ val create_versioned
         and type caller_update = 'update
         and type caller_error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
 
 val create_versioned'
@@ -78,7 +78,7 @@ val create_versioned'
         and type update = 'update
         and type error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
 
 val create_or_fail_versioned
@@ -90,7 +90,7 @@ val create_or_fail_versioned
         and type caller_update = 'update
         and type caller_error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ( ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
          Pipe.Reader.t
      , 'error )
@@ -107,7 +107,7 @@ val create_or_fail_versioned'
         and type update = 'update
         and type error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ( ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
          Pipe.Reader.t
      , 'error )
@@ -127,7 +127,7 @@ module Expert : sig
          ('connection
           -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
                Deferred.t)
-    -> resubscribe_delay:Time.Span.t
+    -> resubscribe_delay:Time_float.Span.t
     -> ('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t
 
   val create_or_fail
@@ -137,7 +137,7 @@ module Expert : sig
          ('connection
           -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
                Deferred.t)
-    -> resubscribe_delay:Time.Span.t
+    -> resubscribe_delay:Time_float.Span.t
     -> (('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t, 'error) Result.t
          Or_error.t
          Deferred.t

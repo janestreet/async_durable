@@ -30,7 +30,7 @@ val create
   -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ('response, 'error) Update.t Pipe.Reader.t
 
 (** [create_or_fail] will return an [Error e] if the initial attempt to dispatch the
@@ -41,7 +41,7 @@ val create_or_fail
   -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> (('response, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t Deferred.t
 
 (** [create_versioned], [create_or_fail_versioned], [create_versioned'],
@@ -57,7 +57,7 @@ val create_versioned
         and type caller_response = 'response
         and type caller_error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ('response Or_error.t, 'error) Update.t Pipe.Reader.t
 
 val create_versioned'
@@ -68,7 +68,7 @@ val create_versioned'
         and type response = 'response
         and type error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ('response Or_error.t, 'error) Update.t Pipe.Reader.t
 
 val create_or_fail_versioned
@@ -79,7 +79,7 @@ val create_or_fail_versioned
         and type caller_response = 'response
         and type caller_error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t
        Deferred.t
 
@@ -91,6 +91,6 @@ val create_or_fail_versioned'
         and type response = 'response
         and type error = 'error)
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t
        Deferred.t

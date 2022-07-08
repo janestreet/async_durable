@@ -87,7 +87,9 @@ module Expert = struct
         ~resubscribe_delay
     =
     let updates_reader, updates_writer = Pipe.create () in
-    let resubscribe_delay = Time_ns.Span.of_sec (Time.Span.to_sec resubscribe_delay) in
+    let resubscribe_delay =
+      Time_ns.Span.of_sec (Time_float.Span.to_sec resubscribe_delay)
+    in
     let t = { updates_writer; connection; resubscribe_delay; dispatch; time_source } in
     updates_reader, t
   ;;

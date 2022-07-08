@@ -17,7 +17,7 @@ val create
   -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> ('response, 'error) Update.t Pipe.Reader.t
 [@@deprecated "[since 2018-04] use Durable_pipe_rpc instead"]
 
@@ -26,6 +26,6 @@ val create_or_fail
   -> Rpc.Connection.t Durable.t
   -> ('query, 'response, 'error) Rpc.Pipe_rpc.t
   -> query:'query
-  -> resubscribe_delay:Time.Span.t
+  -> resubscribe_delay:Time_float.Span.t
   -> (('response, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t Deferred.t
 [@@deprecated "[since 2018-04] use Durable_pipe_rpc instead"]
