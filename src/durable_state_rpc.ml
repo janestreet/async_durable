@@ -131,11 +131,13 @@ let create_versioned
       ~resubscribe_delay
   =
   let dispatch conn =
-    let module State_rpc = (val rpc_module : Versioned_rpc.Both_convert.State_rpc.S
-                            with type caller_query = query
-                             and type caller_state = state
-                             and type caller_update = update
-                             and type caller_error = error)
+    let module State_rpc =
+      (val rpc_module
+        : Versioned_rpc.Both_convert.State_rpc.S
+       with type caller_query = query
+        and type caller_state = state
+        and type caller_update = update
+        and type caller_error = error)
     in
     State_rpc.dispatch_multi conn query
   in
@@ -151,11 +153,13 @@ let create_versioned'
       ~resubscribe_delay
   =
   let dispatch conn =
-    let module State_rpc = (val rpc_module : Versioned_rpc.Caller_converts.State_rpc.S
-                            with type query = query
-                             and type state = state
-                             and type update = update
-                             and type error = error)
+    let module State_rpc =
+      (val rpc_module
+        : Versioned_rpc.Caller_converts.State_rpc.S
+       with type query = query
+        and type state = state
+        and type update = update
+        and type error = error)
     in
     State_rpc.dispatch_multi conn query
   in
@@ -176,11 +180,13 @@ let create_or_fail_versioned
       ~resubscribe_delay
   =
   let dispatch conn =
-    let module State_rpc = (val rpc_module : Versioned_rpc.Both_convert.State_rpc.S
-                            with type caller_query = query
-                             and type caller_state = state
-                             and type caller_update = update
-                             and type caller_error = error)
+    let module State_rpc =
+      (val rpc_module
+        : Versioned_rpc.Both_convert.State_rpc.S
+       with type caller_query = query
+        and type caller_state = state
+        and type caller_update = update
+        and type caller_error = error)
     in
     State_rpc.dispatch_multi conn query
   in
@@ -196,11 +202,13 @@ let create_or_fail_versioned'
       ~resubscribe_delay
   =
   let dispatch conn =
-    let module State_rpc = (val rpc_module : Versioned_rpc.Caller_converts.State_rpc.S
-                            with type query = query
-                             and type state = state
-                             and type update = update
-                             and type error = error)
+    let module State_rpc =
+      (val rpc_module
+        : Versioned_rpc.Caller_converts.State_rpc.S
+       with type query = query
+        and type state = state
+        and type update = update
+        and type error = error)
     in
     State_rpc.dispatch_multi conn query
   in
