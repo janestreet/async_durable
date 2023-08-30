@@ -35,20 +35,20 @@ let create ?time_source connection rpc ~query ~resubscribe_delay =
 ;;
 
 let create_versioned
-      (type query response error)
-      ?time_source
-      connection
-      rpc_module
-      ~(query : query)
-      ~resubscribe_delay
+  (type query response error)
+  ?time_source
+  connection
+  rpc_module
+  ~(query : query)
+  ~resubscribe_delay
   =
   let dispatch conn =
     let module Pipe_rpc =
       (val rpc_module
-        : Versioned_rpc.Both_convert.Pipe_rpc.S
-       with type caller_query = query
-        and type caller_response = response
-        and type caller_error = error)
+          : Versioned_rpc.Both_convert.Pipe_rpc.S
+          with type caller_query = query
+           and type caller_response = response
+           and type caller_error = error)
     in
     Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
@@ -57,20 +57,20 @@ let create_versioned
 ;;
 
 let create_versioned'
-      (type query response error)
-      ?time_source
-      connection
-      rpc_module
-      ~(query : query)
-      ~resubscribe_delay
+  (type query response error)
+  ?time_source
+  connection
+  rpc_module
+  ~(query : query)
+  ~resubscribe_delay
   =
   let dispatch conn =
     let module Pipe_rpc =
       (val rpc_module
-        : Versioned_rpc.Caller_converts.Pipe_rpc.S
-       with type query = query
-        and type response = response
-        and type error = error)
+          : Versioned_rpc.Caller_converts.Pipe_rpc.S
+          with type query = query
+           and type response = response
+           and type error = error)
     in
     Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
@@ -92,20 +92,20 @@ let create_or_fail ?time_source connection rpc ~query ~resubscribe_delay =
 ;;
 
 let create_or_fail_versioned
-      (type query response error)
-      ?time_source
-      connection
-      rpc_module
-      ~(query : query)
-      ~resubscribe_delay
+  (type query response error)
+  ?time_source
+  connection
+  rpc_module
+  ~(query : query)
+  ~resubscribe_delay
   =
   let dispatch conn =
     let module Pipe_rpc =
       (val rpc_module
-        : Versioned_rpc.Both_convert.Pipe_rpc.S
-       with type caller_query = query
-        and type caller_response = response
-        and type caller_error = error)
+          : Versioned_rpc.Both_convert.Pipe_rpc.S
+          with type caller_query = query
+           and type caller_response = response
+           and type caller_error = error)
     in
     Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
@@ -118,20 +118,20 @@ let create_or_fail_versioned
 ;;
 
 let create_or_fail_versioned'
-      (type query response error)
-      ?time_source
-      connection
-      rpc_module
-      ~(query : query)
-      ~resubscribe_delay
+  (type query response error)
+  ?time_source
+  connection
+  rpc_module
+  ~(query : query)
+  ~resubscribe_delay
   =
   let dispatch conn =
     let module Pipe_rpc =
       (val rpc_module
-        : Versioned_rpc.Caller_converts.Pipe_rpc.S
-       with type query = query
-        and type response = response
-        and type error = error)
+          : Versioned_rpc.Caller_converts.Pipe_rpc.S
+          with type query = query
+           and type response = response
+           and type error = error)
     in
     Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
   in
