@@ -25,13 +25,15 @@ let filter_map_update update =
   | L.State () -> None
 ;;
 
-let create ?time_source connection rpc ~query ~resubscribe_delay =
-  let dispatch conn =
-    Rpc.Pipe_rpc.dispatch rpc conn query
-    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
-  in
+let create' ?time_source connection ~dispatch ~resubscribe_delay =
+  let dispatch conn = dispatch conn >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id) in
   Durable_state_rpc.Expert.create ?time_source connection ~dispatch ~resubscribe_delay
   |> Pipe.filter_map ~f:filter_map_update
+;;
+
+let create ?time_source connection rpc ~query ~resubscribe_delay =
+  let dispatch conn = Rpc.Pipe_rpc.dispatch rpc conn query in
+  create' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_versioned
@@ -50,10 +52,9 @@ let create_versioned
            and type caller_response = response
            and type caller_error = error)
     in
-    Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+    Pipe_rpc.dispatch_multi conn query
   in
-  Durable_state_rpc.Expert.create ?time_source connection ~dispatch ~resubscribe_delay
-  |> Pipe.filter_map ~f:filter_map_update
+  create' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_versioned'
@@ -78,17 +79,19 @@ let create_versioned'
   |> Pipe.filter_map ~f:filter_map_update
 ;;
 
-let create_or_fail ?time_source connection rpc ~query ~resubscribe_delay =
-  let dispatch conn =
-    Rpc.Pipe_rpc.dispatch rpc conn query
-    >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
-  in
+let create_or_fail' ?time_source connection ~dispatch ~resubscribe_delay =
+  let dispatch conn = dispatch conn >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id) in
   Durable_state_rpc.Expert.create_or_fail
     ?time_source
     connection
     ~dispatch
     ~resubscribe_delay
   >>|? Result.map ~f:(Pipe.filter_map ~f:filter_map_update)
+;;
+
+let create_or_fail ?time_source connection rpc ~query ~resubscribe_delay =
+  let dispatch conn = Rpc.Pipe_rpc.dispatch rpc conn query in
+  create_or_fail' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_or_fail_versioned
@@ -107,14 +110,9 @@ let create_or_fail_versioned
            and type caller_response = response
            and type caller_error = error)
     in
-    Pipe_rpc.dispatch_multi conn query >>|? Result.map ~f:(fun (pipe, id) -> (), pipe, id)
+    Pipe_rpc.dispatch_multi conn query
   in
-  Durable_state_rpc.Expert.create_or_fail
-    ?time_source
-    connection
-    ~dispatch
-    ~resubscribe_delay
-  >>|? Result.map ~f:(Pipe.filter_map ~f:filter_map_update)
+  create_or_fail' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_or_fail_versioned'

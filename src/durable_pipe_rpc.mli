@@ -44,6 +44,29 @@ val create_or_fail
   -> resubscribe_delay:Time_float.Span.t
   -> (('response, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t Deferred.t
 
+(** Like [create] and [create_or_fail], but allow specifying a custom dispatch function.
+    This is useful for clients using babel, where the [Rpc.t] is not usually exposed. *)
+
+val create'
+  :  ?time_source:Time_source.t
+  -> 'connection Durable.t
+  -> dispatch:
+       ('connection
+        -> ('response Pipe.Reader.t * Rpc.Pipe_rpc.Metadata.t, 'error) Result.t Or_error.t
+           Deferred.t)
+  -> resubscribe_delay:Time_float.Span.t
+  -> ('response, 'error) Update.t Pipe.Reader.t
+
+val create_or_fail'
+  :  ?time_source:Time_source.t
+  -> 'connection Durable.t
+  -> dispatch:
+       ('connection
+        -> ('response Pipe.Reader.t * Rpc.Pipe_rpc.Metadata.t, 'error) Result.t Or_error.t
+           Deferred.t)
+  -> resubscribe_delay:Time_float.Span.t
+  -> (('response, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t Deferred.t
+
 (** [create_versioned], [create_or_fail_versioned], [create_versioned'],
     [create_or_fail_versioned'] are identical to [create] and [create_or_fail] but work
     for [Caller_converts] and [Both_converts] Versioned Pipe RPCs.
