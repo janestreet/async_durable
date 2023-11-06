@@ -79,47 +79,45 @@ let rec handle_update_pipe t deferred_pipe =
     handle_update_pipe t (subscribe t)
 ;;
 
-module Expert = struct
-  let create_internal
-    ?(time_source = Time_source.wall_clock ())
-    connection
-    ~dispatch
-    ~resubscribe_delay
-    =
-    let updates_reader, updates_writer = Pipe.create () in
-    let resubscribe_delay =
-      Time_ns.Span.of_sec (Time_float.Span.to_sec resubscribe_delay)
-    in
-    let t = { updates_writer; connection; resubscribe_delay; dispatch; time_source } in
-    updates_reader, t
-  ;;
+let create_internal
+  ?(time_source = Time_source.wall_clock ())
+  connection
+  ~dispatch
+  ~resubscribe_delay
+  =
+  let updates_reader, updates_writer = Pipe.create () in
+  let resubscribe_delay =
+    Time_ns.Span.of_sec (Time_float.Span.to_sec resubscribe_delay)
+  in
+  let t = { updates_writer; connection; resubscribe_delay; dispatch; time_source } in
+  updates_reader, t
+;;
 
-  let create ?time_source connection ~dispatch ~resubscribe_delay =
-    let updates_reader, t =
-      create_internal ?time_source connection ~dispatch ~resubscribe_delay
-    in
-    handle_update_pipe t (subscribe t);
-    updates_reader
-  ;;
+let create' ?time_source connection ~dispatch ~resubscribe_delay =
+  let updates_reader, t =
+    create_internal ?time_source connection ~dispatch ~resubscribe_delay
+  in
+  handle_update_pipe t (subscribe t);
+  updates_reader
+;;
 
-  let create_or_fail ?time_source connection ~dispatch ~resubscribe_delay =
-    let updates_reader, t =
-      create_internal ?time_source connection ~dispatch ~resubscribe_delay
-    in
-    match%map try_to_get_fresh_pipe t with
-    | Error (`Failed_to_connect e) -> Error e
-    | Error (`Rpc_error e) -> Ok (Error e)
-    | Ok (new_state, fresh_pipe, id) ->
-      write t (Connection_success id);
-      write t (State new_state);
-      handle_update_pipe t (return (`Ok fresh_pipe));
-      Ok (Ok updates_reader)
-  ;;
-end
+let create_or_fail' ?time_source connection ~dispatch ~resubscribe_delay =
+  let updates_reader, t =
+    create_internal ?time_source connection ~dispatch ~resubscribe_delay
+  in
+  match%map try_to_get_fresh_pipe t with
+  | Error (`Failed_to_connect e) -> Error e
+  | Error (`Rpc_error e) -> Ok (Error e)
+  | Ok (new_state, fresh_pipe, id) ->
+    write t (Connection_success id);
+    write t (State new_state);
+    handle_update_pipe t (return (`Ok fresh_pipe));
+    Ok (Ok updates_reader)
+;;
 
 let create ?time_source connection rpc ~query ~resubscribe_delay =
   let dispatch conn = Rpc.State_rpc.dispatch rpc conn query in
-  Expert.create ?time_source connection ~dispatch ~resubscribe_delay
+  create' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_versioned
@@ -141,7 +139,7 @@ let create_versioned
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create ?time_source connection ~dispatch ~resubscribe_delay
+  create' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_versioned'
@@ -163,12 +161,12 @@ let create_versioned'
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create ?time_source connection ~dispatch ~resubscribe_delay
+  create' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_or_fail ?time_source connection rpc ~query ~resubscribe_delay =
   let dispatch conn = Rpc.State_rpc.dispatch rpc conn query in
-  Expert.create_or_fail ?time_source connection ~dispatch ~resubscribe_delay
+  create_or_fail' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_or_fail_versioned
@@ -190,7 +188,7 @@ let create_or_fail_versioned
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create_or_fail ?time_source connection ~dispatch ~resubscribe_delay
+  create_or_fail' ?time_source connection ~dispatch ~resubscribe_delay
 ;;
 
 let create_or_fail_versioned'
@@ -212,5 +210,5 @@ let create_or_fail_versioned'
     in
     State_rpc.dispatch_multi conn query
   in
-  Expert.create_or_fail ?time_source connection ~dispatch ~resubscribe_delay
+  create_or_fail' ?time_source connection ~dispatch ~resubscribe_delay
 ;;

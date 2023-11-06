@@ -52,6 +52,31 @@ val create_or_fail
      Or_error.t
      Deferred.t
 
+(** Like [create] and [create_or_fail], but allow specifying a custom dispatch function.
+    This is useful for clients using babel, where the [Rpc.t] is not usually exposed. *)
+
+val create'
+  :  ?time_source:Time_source.t
+  -> 'connection Durable.t
+  -> dispatch:
+       ('connection
+        -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
+           Deferred.t)
+  -> resubscribe_delay:Time_float.Span.t
+  -> ('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t
+
+val create_or_fail'
+  :  ?time_source:Time_source.t
+  -> 'connection Durable.t
+  -> dispatch:
+       ('connection
+        -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
+           Deferred.t)
+  -> resubscribe_delay:Time_float.Span.t
+  -> (('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t, 'error) Result.t
+     Or_error.t
+     Deferred.t
+
 (** [create_versioned], [create_or_fail_versioned], [create_versioned'],
     [create_or_fail_versioned'] are identical to [create] and [create_or_fail] but work
     for [Caller_converts] and [Both_converts] Versioned State RPCs.
@@ -114,31 +139,3 @@ val create_or_fail_versioned'
      Result.t
      Or_error.t
      Deferred.t
-
-(** [Expert] is only used to build [Durable_pipe_rpc] off the same implementation as
-    [Durable_state_rpc]. If other similar [Rpc]s come into being, they can also take
-    advantage.
-*)
-module Expert : sig
-  val create
-    :  ?time_source:Time_source.t
-    -> 'connection Durable.t
-    -> dispatch:
-         ('connection
-          -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
-             Deferred.t)
-    -> resubscribe_delay:Time_float.Span.t
-    -> ('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t
-
-  val create_or_fail
-    :  ?time_source:Time_source.t
-    -> 'connection Durable.t
-    -> dispatch:
-         ('connection
-          -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
-             Deferred.t)
-    -> resubscribe_delay:Time_float.Span.t
-    -> (('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t, 'error) Result.t
-       Or_error.t
-       Deferred.t
-end
