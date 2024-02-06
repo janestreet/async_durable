@@ -1,3 +1,6 @@
-(library (name async_durable) (public_name async_durable)
- (preprocess (pps ppx_jane))
+(library
+ (name async_durable)
+ (public_name async_durable)
+ (preprocess
+  (pps ppx_jane))
  (libraries async_kernel async_rpc_kernel core_kernel.bus core))
