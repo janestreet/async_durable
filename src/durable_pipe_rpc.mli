@@ -46,7 +46,6 @@ val create_or_fail
 
 (** Like [create] and [create_or_fail], but allow specifying a custom dispatch function.
     This is useful for clients using babel, where the [Rpc.t] is not usually exposed. *)
-
 val create'
   :  ?time_source:Time_source.t
   -> 'connection Durable.t
