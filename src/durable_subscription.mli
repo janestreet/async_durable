@@ -19,7 +19,7 @@ val create
   -> query:'query
   -> resubscribe_delay:Time_float.Span.t
   -> ('response, 'error) Update.t Pipe.Reader.t
-  [@@deprecated "[since 2018-04] use Durable_pipe_rpc instead"]
+[@@deprecated "[since 2018-04] use Durable_pipe_rpc instead"]
 
 val create_or_fail
   :  ?time_source:Time_source.t
@@ -28,4 +28,4 @@ val create_or_fail
   -> query:'query
   -> resubscribe_delay:Time_float.Span.t
   -> (('response, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t Deferred.t
-  [@@deprecated "[since 2018-04] use Durable_pipe_rpc instead"]
+[@@deprecated "[since 2018-04] use Durable_pipe_rpc instead"]

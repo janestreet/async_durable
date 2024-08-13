@@ -47,10 +47,10 @@ val create_or_fail
   -> query:'query
   -> resubscribe_delay:Time_float.Span.t
   -> ( ('state, 'update, 'error, Rpc.State_rpc.Metadata.t) Update.t Pipe.Reader.t
-     , 'error )
-     Result.t
-     Or_error.t
-     Deferred.t
+       , 'error )
+       Result.t
+       Or_error.t
+       Deferred.t
 
 (** Like [create] and [create_or_fail], but allow specifying a custom dispatch function.
     This is useful for clients using babel, where the [Rpc.t] is not usually exposed. *)
@@ -61,7 +61,7 @@ val create'
   -> dispatch:
        ('connection
         -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
-           Deferred.t)
+             Deferred.t)
   -> resubscribe_delay:Time_float.Span.t
   -> ('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t
 
@@ -71,11 +71,11 @@ val create_or_fail'
   -> dispatch:
        ('connection
         -> ('state * 'update Pipe.Reader.t * 'metadata, 'error) Result.t Or_error.t
-           Deferred.t)
+             Deferred.t)
   -> resubscribe_delay:Time_float.Span.t
   -> (('state, 'update, 'error, 'metadata) Update.t Pipe.Reader.t, 'error) Result.t
-     Or_error.t
-     Deferred.t
+       Or_error.t
+       Deferred.t
 
 (** [create_versioned], [create_or_fail_versioned], [create_versioned'],
     [create_or_fail_versioned'] are identical to [create] and [create_or_fail] but work
@@ -117,11 +117,11 @@ val create_or_fail_versioned
   -> query:'query
   -> resubscribe_delay:Time_float.Span.t
   -> ( ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
-       Pipe.Reader.t
-     , 'error )
-     Result.t
-     Or_error.t
-     Deferred.t
+         Pipe.Reader.t
+       , 'error )
+       Result.t
+       Or_error.t
+       Deferred.t
 
 val create_or_fail_versioned'
   :  ?time_source:Time_source.t
@@ -134,8 +134,8 @@ val create_or_fail_versioned'
   -> query:'query
   -> resubscribe_delay:Time_float.Span.t
   -> ( ('state, 'update Or_error.t, 'error, Rpc.State_rpc.Metadata.t) Update.t
-       Pipe.Reader.t
-     , 'error )
-     Result.t
-     Or_error.t
-     Deferred.t
+         Pipe.Reader.t
+       , 'error )
+       Result.t
+       Or_error.t
+       Deferred.t

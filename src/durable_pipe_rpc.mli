@@ -52,7 +52,7 @@ val create'
   -> dispatch:
        ('connection
         -> ('response Pipe.Reader.t * Rpc.Pipe_rpc.Metadata.t, 'error) Result.t Or_error.t
-           Deferred.t)
+             Deferred.t)
   -> resubscribe_delay:Time_float.Span.t
   -> ('response, 'error) Update.t Pipe.Reader.t
 
@@ -62,7 +62,7 @@ val create_or_fail'
   -> dispatch:
        ('connection
         -> ('response Pipe.Reader.t * Rpc.Pipe_rpc.Metadata.t, 'error) Result.t Or_error.t
-           Deferred.t)
+             Deferred.t)
   -> resubscribe_delay:Time_float.Span.t
   -> (('response, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t Deferred.t
 
@@ -103,7 +103,7 @@ val create_or_fail_versioned
   -> query:'query
   -> resubscribe_delay:Time_float.Span.t
   -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t
-     Deferred.t
+       Deferred.t
 
 val create_or_fail_versioned'
   :  ?time_source:Time_source.t
@@ -115,4 +115,4 @@ val create_or_fail_versioned'
   -> query:'query
   -> resubscribe_delay:Time_float.Span.t
   -> (('response Or_error.t, 'error) Update.t Pipe.Reader.t, 'error) Result.t Or_error.t
-     Deferred.t
+       Deferred.t

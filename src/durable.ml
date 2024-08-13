@@ -60,11 +60,11 @@ let get_durable t =
           | Building _ -> true
           | _ -> false);
         t.durable
-          <- (match result with
-              (* Errors that show up here will also be returned by [get_durable]. We aren't
+        <- (match result with
+            (* Errors that show up here will also be returned by [get_durable]. We aren't
              losing any information *)
-              | Error _ -> Void
-              | Ok durable -> Built durable);
+            | Error _ -> Void
+            | Ok durable -> Built durable);
         result)
     in
     t.durable <- Building building;
