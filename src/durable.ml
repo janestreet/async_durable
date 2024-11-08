@@ -96,101 +96,95 @@ let with_ t ~f =
 
 let is_intact_bus t = Bus.read_only t.is_intact_bus
 
-let%test_module _ =
-  (module struct
-    let go () = Async_kernel_scheduler.Expert.run_cycles_until_no_jobs_remain ()
-    let create_counter = ref 0
-    let fix_counter = ref 0
+module%test _ = struct
+  let go () = Async_kernel_scheduler.Expert.run_cycles_until_no_jobs_remain ()
+  let create_counter = ref 0
+  let fix_counter = ref 0
 
-    module Fragile = struct
-      type t = { mutable is_broken : bool }
+  module Fragile = struct
+    type t = { mutable is_broken : bool }
 
-      let is_broken t = t.is_broken
-      let break t = t.is_broken <- true
-      let create_ () = return (Ok { is_broken = false })
+    let is_broken t = t.is_broken
+    let break t = t.is_broken <- true
+    let create_ () = return (Ok { is_broken = false })
 
-      let create () =
-        create_counter := !create_counter + 1;
-        create_ ()
-      ;;
-
-      let fix _t =
-        fix_counter := !fix_counter + 1;
-        create_ ()
-      ;;
-    end
-
-    let reset () =
-      create_counter := 0;
-      fix_counter := 0
+    let create () =
+      create_counter := !create_counter + 1;
+      create_ ()
     ;;
 
-    let create ~use_fix ~now =
-      let to_rebuild = if use_fix then Some Fragile.fix else None in
-      if now
-      then
-        create_or_fail
-          ~to_create:Fragile.create
-          ~is_broken:Fragile.is_broken
-          ?to_rebuild
-          ()
-        >>| ok_exn
-      else
-        return
-          (create ~to_create:Fragile.create ~is_broken:Fragile.is_broken ?to_rebuild ())
+    let fix _t =
+      fix_counter := !fix_counter + 1;
+      create_ ()
     ;;
+  end
 
-    let poke t = ignore (with_ t ~f:(fun _t -> return (Ok ())))
+  let reset () =
+    create_counter := 0;
+    fix_counter := 0
+  ;;
 
-    let%expect_test _ =
-      let pass = ref false in
-      (create ~use_fix:false ~now:true
-       >>> fun t ->
-       match t.durable with
-       | Built _ -> pass := true
-       | _ -> ());
-      go ();
-      print_s [%message (!pass : bool)];
-      [%expect {| (!pass true) |}]
-    ;;
+  let create ~use_fix ~now =
+    let to_rebuild = if use_fix then Some Fragile.fix else None in
+    if now
+    then
+      create_or_fail ~to_create:Fragile.create ~is_broken:Fragile.is_broken ?to_rebuild ()
+      >>| ok_exn
+    else
+      return
+        (create ~to_create:Fragile.create ~is_broken:Fragile.is_broken ?to_rebuild ())
+  ;;
 
-    let build_break_poke ~use_fix ~now =
-      reset ();
-      (create ~use_fix ~now
-       >>> fun t ->
-       with_ t ~f:(fun fragile ->
-         Fragile.break fragile;
-         return (Ok ()))
-       >>> fun result ->
-       Or_error.ok_exn result;
-       poke t;
-       poke t;
-       poke t);
-      go ()
-    ;;
+  let poke t = ignore (with_ t ~f:(fun _t -> return (Ok ())))
 
-    let%expect_test _ =
-      build_break_poke ~use_fix:true ~now:true;
-      print_s [%message (!create_counter : int) (!fix_counter : int)];
-      [%expect {| ((!create_counter 1) (!fix_counter 1)) |}]
-    ;;
+  let%expect_test _ =
+    let pass = ref false in
+    (create ~use_fix:false ~now:true
+     >>> fun t ->
+     match t.durable with
+     | Built _ -> pass := true
+     | _ -> ());
+    go ();
+    print_s [%message (!pass : bool)];
+    [%expect {| (!pass true) |}]
+  ;;
 
-    let%expect_test _ =
-      build_break_poke ~use_fix:true ~now:false;
-      print_s [%message (!create_counter : int) (!fix_counter : int)];
-      [%expect {| ((!create_counter 1) (!fix_counter 1)) |}]
-    ;;
+  let build_break_poke ~use_fix ~now =
+    reset ();
+    (create ~use_fix ~now
+     >>> fun t ->
+     with_ t ~f:(fun fragile ->
+       Fragile.break fragile;
+       return (Ok ()))
+     >>> fun result ->
+     Or_error.ok_exn result;
+     poke t;
+     poke t;
+     poke t);
+    go ()
+  ;;
 
-    let%expect_test _ =
-      build_break_poke ~use_fix:false ~now:true;
-      print_s [%message (!create_counter : int) (!fix_counter : int)];
-      [%expect {| ((!create_counter 2) (!fix_counter 0)) |}]
-    ;;
+  let%expect_test _ =
+    build_break_poke ~use_fix:true ~now:true;
+    print_s [%message (!create_counter : int) (!fix_counter : int)];
+    [%expect {| ((!create_counter 1) (!fix_counter 1)) |}]
+  ;;
 
-    let%expect_test _ =
-      build_break_poke ~use_fix:false ~now:false;
-      print_s [%message (!create_counter : int) (!fix_counter : int)];
-      [%expect {| ((!create_counter 2) (!fix_counter 0)) |}]
-    ;;
-  end)
-;;
+  let%expect_test _ =
+    build_break_poke ~use_fix:true ~now:false;
+    print_s [%message (!create_counter : int) (!fix_counter : int)];
+    [%expect {| ((!create_counter 1) (!fix_counter 1)) |}]
+  ;;
+
+  let%expect_test _ =
+    build_break_poke ~use_fix:false ~now:true;
+    print_s [%message (!create_counter : int) (!fix_counter : int)];
+    [%expect {| ((!create_counter 2) (!fix_counter 0)) |}]
+  ;;
+
+  let%expect_test _ =
+    build_break_poke ~use_fix:false ~now:false;
+    print_s [%message (!create_counter : int) (!fix_counter : int)];
+    [%expect {| ((!create_counter 2) (!fix_counter 0)) |}]
+  ;;
+end
