@@ -27,8 +27,7 @@ end
     Closing the returned pipe will permanently close the subscription.
 
     It is guaranteed that every [Connection_success] message will be immediately followed
-    by a [State] message.
-*)
+    by a [State] message. *)
 val create
   :  ?time_source:Time_source.t
   -> Rpc.Connection.t Durable.t
@@ -79,8 +78,7 @@ val create_or_fail'
 
 (** [create_versioned], [create_or_fail_versioned], [create_versioned'],
     [create_or_fail_versioned'] are identical to [create] and [create_or_fail] but work
-    for [Caller_converts] and [Both_converts] Versioned State RPCs.
-*)
+    for [Caller_converts] and [Both_converts] Versioned State RPCs. *)
 
 val create_versioned
   :  ?time_source:Time_source.t

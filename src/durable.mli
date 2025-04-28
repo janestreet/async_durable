@@ -9,16 +9,15 @@ open Async_kernel
     for an Rpc.Connection.t. Consider using Durable if you want out-of-the-box support for
     Durable Pipe and State RPC connections, or if you prefer the with_ based interface,
     which returns connection level errors to the calling code and avoids the complexities
-    that can arise from Deferreds that never become determined.
-*)
+    that can arise from Deferreds that never become determined. *)
 
 type 'a t
 
-(** [to_create] tells the Durable how to build a fresh 'a value.  If [to_create] raises,
-    the exception is treated as if an [Error] was returned.  If [to_create] needs to fail
-    permanently when exceptions occur, then consider using [Scheduler.within'
-    ~monitor:Monitor.main] inside of [to_create], so that the exceptions go to a monitor
-    that will abend the app.
+(** [to_create] tells the Durable how to build a fresh 'a value. If [to_create] raises,
+    the exception is treated as if an [Error] was returned. If [to_create] needs to fail
+    permanently when exceptions occur, then consider using
+    [Scheduler.within' ~monitor:Monitor.main] inside of [to_create], so that the
+    exceptions go to a monitor that will abend the app.
 
     [is_broken] tests whether the current 'a value can be used. It should return true when
     you want the Durable to attempt to rebuild or recreate the 'a.
@@ -31,8 +30,7 @@ type 'a t
     value with [to_create].
 
     [create] does not create the Durable value. The first call to [to_create] will be made
-    on the first use of [with_].
-*)
+    on the first use of [with_]. *)
 val create
   :  to_create:(unit -> 'a Deferred.Or_error.t)
   -> is_broken:('a -> bool)
@@ -42,8 +40,7 @@ val create
 
 (** [create_or_fail] immediately calls [to_create], returning an error if that first
     attempt fails. This function will also return an error if the initial durable value is
-    broken.
-*)
+    broken. *)
 val create_or_fail
   :  to_create:(unit -> 'a Deferred.Or_error.t)
   -> is_broken:('a -> bool)
@@ -51,20 +48,19 @@ val create_or_fail
   -> unit
   -> 'a t Or_error.t Deferred.t
 
-(** [with_] applies the given function to the Durable value if [is_broken] returns
-    false. If [is_broken] return true, it first calls [to_create] or [to_rebuild].  This
-    function will return an error if either [to_create] or [to_rebuild] returns an error,
-    or if the rebuilt or recreated durable value is broken. [is_broken] is checked
-    immediately before calling [f].
+(** [with_] applies the given function to the Durable value if [is_broken] returns false.
+    If [is_broken] return true, it first calls [to_create] or [to_rebuild]. This function
+    will return an error if either [to_create] or [to_rebuild] returns an error, or if the
+    rebuilt or recreated durable value is broken. [is_broken] is checked immediately
+    before calling [f].
 
     We will only make one attempt to rebuild a broken value. If a call to [to_rebuild]
     returns [Error _], we will drop the previously built value. The next call to [with_]
     will call [to_create].
 
-    [with_] will raise if [f] raises.
-*)
+    [with_] will raise if [f] raises. *)
 val with_ : 'a t -> f:('a -> 'b Deferred.Or_error.t) -> 'b Deferred.Or_error.t
 
-(** [is_intact] exposes whether the Durable value is in a valid state (i.e. it
-    has been built and it is not currently broken). *)
+(** [is_intact] exposes whether the Durable value is in a valid state (i.e. it has been
+    built and it is not currently broken). *)
 val is_intact_bus : 'a t -> (bool -> unit) Bus.Read_only.t

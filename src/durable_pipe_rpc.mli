@@ -18,13 +18,12 @@ module Update : sig
 end
 
 (** [create] will immediately dispatch the the supplied [Rpc.Pipe_rpc.t] with [query] over
-    the [Rpc.Connection.t Async_durable.t]. If a connection attempt fails or if the subscription
-    closes, it waits [resubscribe_delay] and dispatches again to create a new subscription.
-    The pipe returned by [create] contains all the responses that come over the internal
-    subscription, as well as updates about the state of the [t].
+    the [Rpc.Connection.t Async_durable.t]. If a connection attempt fails or if the
+    subscription closes, it waits [resubscribe_delay] and dispatches again to create a new
+    subscription. The pipe returned by [create] contains all the responses that come over
+    the internal subscription, as well as updates about the state of the [t].
 
-    Closing the returned pipe will permanently close the subscription.
-*)
+    Closing the returned pipe will permanently close the subscription. *)
 val create
   :  ?time_source:Time_source.t
   -> Rpc.Connection.t Durable.t
@@ -68,8 +67,7 @@ val create_or_fail'
 
 (** [create_versioned], [create_or_fail_versioned], [create_versioned'],
     [create_or_fail_versioned'] are identical to [create] and [create_or_fail] but work
-    for [Caller_converts] and [Both_converts] Versioned Pipe RPCs.
-*)
+    for [Caller_converts] and [Both_converts] Versioned Pipe RPCs. *)
 
 val create_versioned
   :  ?time_source:Time_source.t
