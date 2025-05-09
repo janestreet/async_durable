@@ -5,11 +5,12 @@ open Async_rpc_kernel
 module Update = struct
   type ('response, 'error) t =
     | Attempting_new_connection
-    | Connection_success of Rpc.Pipe_rpc.Metadata.t
+    | Connection_success of (Rpc.Pipe_rpc.Metadata.t[@sexp.opaque])
     | Lost_connection
     | Failed_to_connect of Error.t
     | Rpc_error of 'error
     | Update of 'response
+  [@@deriving sexp_of]
 end
 
 let filter_map_update update =
