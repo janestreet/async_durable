@@ -15,6 +15,7 @@ module Update : sig
     | Failed_to_connect of Error.t
     | Rpc_error of 'error
     | Update of 'response
+  [@@deriving sexp_of]
 end
 
 (** [create] will immediately dispatch the the supplied [Rpc.Pipe_rpc.t] with [query] over
