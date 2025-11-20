@@ -61,7 +61,7 @@ let get_durable t =
         t.durable
         <- (match result with
             (* Errors that show up here will also be returned by [get_durable]. We aren't
-             losing any information *)
+               losing any information *)
             | Error _ -> Void
             | Ok durable -> Built durable);
         result)
