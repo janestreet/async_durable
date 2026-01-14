@@ -24,9 +24,9 @@ let create ~to_create ~is_broken:to_check_broken ?to_rebuild () =
   ; is_intact = false
   ; is_intact_bus =
       Bus.create_exn
-        Arity1
-        ~on_subscription_after_first_write:Allow_and_send_last_value
+        ~on_subscription_after_first_write:Allow_and_send_last_value_if_global
         ~on_callback_raise:ignore
+        ()
   ; to_rebuild
   }
 ;;
@@ -61,7 +61,7 @@ let get_durable t =
         t.durable
         <- (match result with
             (* Errors that show up here will also be returned by [get_durable]. We aren't
-             losing any information *)
+               losing any information *)
             | Error _ -> Void
             | Ok durable -> Built durable);
         result)

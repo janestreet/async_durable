@@ -74,7 +74,7 @@ let rec handle_update_pipe t deferred_pipe =
        reader returned by [create*].
 
        We use [transfer'] instead of [transfer] to enable our users to do batching with
-       [Pipe.iter'] calls on the reader they were given.  If we used [transfer] then only
+       [Pipe.iter'] calls on the reader they were given. If we used [transfer] then only
        one item at a time would hit their pipe. *)
     Pipe.transfer' pipe t.updates_writer ~f:(fun updates ->
       return (Queue.map updates ~f:(fun update -> Update.Update update)))
