@@ -16,6 +16,16 @@ module Update : sig
     | Update of 'update
     | State of 'state
   [@@deriving sexp_of]
+
+  val map_update
+    :  ('state, 'update, 'error, 'metadata) t
+    -> f:('update -> 'new_update)
+    -> ('state, 'new_update, 'error, 'metadata) t
+
+  val map_state
+    :  ('state, 'update, 'error, 'metadata) t
+    -> f:('state -> 'new_state)
+    -> ('new_state, 'update, 'error, 'metadata) t
 end
 
 (** [create] will immediately dispatch the the supplied [Rpc.State_rpc.t] with [query]
