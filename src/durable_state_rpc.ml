@@ -12,6 +12,28 @@ module Update = struct
     | Update of 'update
     | State of 'state
   [@@deriving sexp_of]
+
+  let map_update t ~f =
+    match t with
+    | Update update -> Update (f update)
+    | Attempting_new_connection -> Attempting_new_connection
+    | Connection_success metadata -> Connection_success metadata
+    | Lost_connection -> Lost_connection
+    | Failed_to_connect error -> Failed_to_connect error
+    | Rpc_error error -> Rpc_error error
+    | State state -> State state
+  ;;
+
+  let map_state t ~f =
+    match t with
+    | State state -> State (f state)
+    | Attempting_new_connection -> Attempting_new_connection
+    | Connection_success metadata -> Connection_success metadata
+    | Lost_connection -> Lost_connection
+    | Failed_to_connect error -> Failed_to_connect error
+    | Rpc_error error -> Rpc_error error
+    | Update update -> Update update
+  ;;
 end
 
 type ('state, 'update, 'error, 'metadata, 'connection) t =

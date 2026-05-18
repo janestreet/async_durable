@@ -19,7 +19,7 @@ depends: [
   "ppx_jane"
   "dune"             {>= "3.17.0"}
 ]
-available: arch != "arm32" & arch != "x86_32"
+available: arch != "x86_32"
 synopsis: "Durable connections for use with async"
 description: "
 Async_durable helps recover from errors when connections can be easily be recreated.
