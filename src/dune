@@ -2,5 +2,5 @@
  (name async_durable)
  (public_name async_durable)
  (preprocess
-  (pps ppx_jane))
+  (pps ppx_jane -compare-require-explicit-locality))
  (libraries async_kernel async_rpc_kernel core_kernel.bus core))
