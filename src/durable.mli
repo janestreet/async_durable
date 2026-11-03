@@ -63,4 +63,6 @@ val with_ : 'a t -> f:('a -> 'b Deferred.Or_error.t) -> 'b Deferred.Or_error.t
 
 (** [is_intact] exposes whether the Durable value is in a valid state (i.e. it has been
     built and it is not currently broken). *)
+val is_intact : 'a t -> bool
+
 val is_intact_bus : 'a t -> (bool -> unit) Bus.Read_only.t

@@ -93,6 +93,7 @@ let with_ t ~f =
   else f durable
 ;;
 
+let is_intact t = t.is_intact
 let is_intact_bus t = Bus.read_only t.is_intact_bus
 
 module%test _ = struct
